@@ -1267,3 +1267,19 @@ select option {
   border: 1px solid #888;
   border-radius: 4px;
 }
+
+/* AI report styles */
+.ai-report {
+  background: rgba(13,17,23,0.9);
+  padding: 1.5rem;
+  border: 1px solid rgba(6,214,160,0.2);
+  border-radius: 1rem;
+  max-width: 60ch;
+  margin: 0 auto;
+}
+.report-summary {
+  margin-bottom: 0.75rem;
+}
+.report-sentiment {
+  font-weight: bold;
+}

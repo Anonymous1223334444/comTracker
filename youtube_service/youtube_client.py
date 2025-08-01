@@ -27,9 +27,12 @@ def fetch_videos(q: str, n: int = 10):
             snip = it['snippet']
             vid = it['id']['videoId']
             videos.append({
-                'title':       snip['title'],
-                'videoId':     vid,
-                'publishedAt': snip['publishedAt']
+                'id':           vid,
+                'title':        snip.get('title', ''),
+                'description':  snip.get('description', ''),
+                'channelTitle': snip.get('channelTitle', ''),
+                'url':          f'https://www.youtube.com/watch?v={vid}',
+                'date':         snip.get('publishedAt', '')
             })
             if len(videos) >= n:
                 break

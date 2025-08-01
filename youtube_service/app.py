@@ -13,7 +13,7 @@ CORS(app)
 @app.route("/articles", methods=["GET"])
 def articles():
     q              = request.args.get("q","")
-    lang_filter    = request.args.get("lang","english").lower()
+    lang_filter    = request.args.get("lang", "").lower()
     country_filter = request.args.get("country","").lower()
     n              = int(request.args.get("n", 200))  # fetch at least 200 videos
 
@@ -27,8 +27,8 @@ def articles():
     normalized = []
 
     for item in raw:
-        title       = item.get("title","")
-        description = item.get("description","")
+        title       = item["title"]
+        description = item["description"]
         body        = f"{title}\n\n{description}".strip()
 
         # language detection & filter
@@ -37,14 +37,14 @@ def articles():
 
         # date filter
         try:
-            dt = parser.isoparse(item.get("date"))
-        except:
+            dt = parser.isoparse(item["date"])
+        except Exception:
             continue
         if dt.date() < start or dt.date() > end: continue
 
         # country detection & filter
-        vid = item.get("id")
-        url = item.get("url", f"https://www.youtube.com/watch?v={vid}")
+        vid = item["id"]
+        url = item["url"]
         cc  = extract_country(url)
         if country_filter and cc != country_filter: continue
 
@@ -54,7 +54,7 @@ def articles():
             "date":       dt.isoformat(),
             "texte":      body,
             "metadonnees": {
-                "auteur": item.get("channelTitle",""),
+                "auteur": item["channelTitle"],
                 "url":     url
             },
             "langue":    lang,

@@ -40,9 +40,8 @@ def articles():
 
         # date filter
         try:
-            dt_iso = parser.isoparse(p.get('created_utc')).astimezone().isoformat()
-            dt     = datetime.fromisoformat(dt_iso)
-        except:
+            dt = datetime.fromtimestamp(float(p.get('created_utc'))).astimezone()
+        except Exception:
             continue
         if dt.date() < start or dt.date() > end: continue
 

@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from extractors import get_extractor, list_extractors
+import os, re, sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import save_articles
-import os, re
 from datetime import datetime
 from flask_cors import CORS
 

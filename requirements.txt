@@ -10,3 +10,4 @@ cloudscraper
 flask-cors
 serpapi
 google-search-results
+openai

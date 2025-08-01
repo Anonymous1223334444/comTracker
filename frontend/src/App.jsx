@@ -5,6 +5,7 @@ import SearchBar          from "./components/SearchBar";
 import ServiceSelector    from "./components/ServiceSelector";
 import ArticleList        from "./components/ArticleList";
 import ArticleCharts      from "./components/ArticleCharts";
+import AIReport          from "./components/AIReport";
 import InsightReport      from "./components/InsightReport";
 import DateRangePicker    from "./components/DateRangePicker";
 import "./styles.css";
@@ -37,9 +38,9 @@ export default function App() {
   const [error,       setError]      = useState(null);
   const [activeTab,   setActiveTab]  = useState("articles");
   const [hasSearched, setHasSearched]= useState(false);
+  const [aiReport, setAIReport] = useState({});
 
   const handleDateChange = (k, v) => (k === "start" ? setStart(v) : setEnd(v));
-
   /* ───────────────────────────────────────────────────────────────────────
      Construit la query-string homogène pour un micro-service
   ─────────────────────────────────────────────────────────────────────── */
@@ -56,11 +57,26 @@ export default function App() {
     return p.toString();
   };
 
+  const generateReport = async (arts) => {
+    try {
+      const res = await fetch("/api/ai/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ articles: arts.slice(0, 20) })
+      });
+      const data = await res.json();
+      if (res.ok) setAIReport(data);
+    } catch {
+      setAIReport({});
+    }
+  };
+
   /* ───────────────────────────────────────────────────────────────────────
      Récupère les articles (un seul service ou “all”)
   ─────────────────────────────────────────────────────────────────────── */
   const fetchArticles = async () => {
     setLoading(true);
+    setAIReport({});
     setError(null);
     setHasSearched(true);
 
@@ -87,6 +103,7 @@ export default function App() {
         collected = await fetchOne(svc);
       }
       setArticles(collected);
+      generateReport(collected);
     } catch (e) {
       setError(e.message);
       setArticles([]);
@@ -205,7 +222,10 @@ export default function App() {
         )}
 
         {hasSearched && activeTab==="rapport" && (
-          <InsightReport articles={filtered} />
+          <>
+            <InsightReport articles={filtered} />
+            <AIReport summary={aiReport.summary} sentiment={aiReport.sentiment} />
+          </>
         )}
       </main>
     </div>
