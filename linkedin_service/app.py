@@ -6,8 +6,7 @@ from dateutil import parser
 from linkedin_client import search_posts, slugify
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.search import match_query
-from langdetect import detect
-import tldextract
+from utils.lang import detect_language, extract_country
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, expose_headers=["Content-Type"])
@@ -70,18 +69,12 @@ def articles():
 
         if not match_query(q, body.lower()): continue
         if ex and any(w in body.lower() for w in ex): continue
-
-        try:
-            lang = detect(body)
-        except:
-            lang = ''
+        
+        lang = detect_language(body)
         if lang_filter and lang != lang_filter: continue
 
         url     = a.get('url') or a.get('link') or ''
-        ext     = tldextract.extract(url)
-        parts   = ext.suffix.split('.')
-        last    = parts[-1]
-        cc      = last if len(last) == 2 else ''
+        cc      = extract_country(url)
         if country_filter and cc != country_filter: continue
 
         normalized.append({

@@ -14,15 +14,23 @@ def search_posts(query: str, max_posts: int = MAX_RESULTS):
     keywords = [k.strip() for k in re.split(r"[,\s]+", query) if k.strip()]
     all_posts = []
     for kw in keywords:
-        params = {
-            "engine": "google",
-            # stricter: the keyword must appear in the *title* of the post
-            "q": f'site:linkedin.com/posts intitle:"{kw}"',
-            "api_key": SERPAPI_KEY,
-            "num": min(max_posts, 1000),
-        }
-        data = GoogleSearch(params).get_dict()
-        all_posts += data.get("organic_results", [])
+        start = 0
+        while len(all_posts) < max_posts:
+            params = {
+                "engine": "google",
+                "q": f'site:linkedin.com/posts intitle:"{kw}"',
+                "api_key": SERPAPI_KEY,
+                "num": min(100, max_posts - len(all_posts)),
+                "start": start,
+            }
+            data = GoogleSearch(params).get_dict()
+            posts = data.get("organic_results", [])
+            if not posts:
+                break
+            all_posts += posts
+            start += 100
+            if len(posts) < 100:
+                break
 
     # deduplicate across several keywords
     seen = set()

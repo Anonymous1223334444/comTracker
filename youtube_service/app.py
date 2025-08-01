@@ -2,8 +2,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dateutil import parser
 from datetime import datetime, date
-import tldextract
-from langdetect import detect
+import re, sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.lang import detect_language, extract_country
 from youtube_client import fetch_videos
 
 app = Flask(__name__)
@@ -31,10 +32,7 @@ def articles():
         body        = f"{title}\n\n{description}".strip()
 
         # language detection & filter
-        try:
-            lang = detect(body)
-        except:
-            lang = ""
+        lang = detect_language(body)
         if lang_filter and lang != lang_filter: continue
 
         # date filter
@@ -47,10 +45,7 @@ def articles():
         # country detection & filter
         vid = item.get("id")
         url = item.get("url", f"https://www.youtube.com/watch?v={vid}")
-        ext = tldextract.extract(url)
-        parts = ext.suffix.split('.')
-        last  = parts[-1]
-        cc    = last if len(last)==2 else ''
+        cc  = extract_country(url)
         if country_filter and cc != country_filter: continue
 
         normalized.append({

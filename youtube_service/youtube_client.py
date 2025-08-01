@@ -4,31 +4,38 @@ from datetime import datetime
 import requests
 
 def fetch_videos(q: str, n: int = 10):
-    """
-    Recherche les n vidéos YouTube les plus récentes pour q.
-    Renvoie une liste de dicts avec title, videoId, publishedAt.
-    """
+    """Fetch up to `n` newest YouTube videos matching query."""
     url = "https://www.googleapis.com/youtube/v3/search"
     params = {
-        'key':       YOUTUBE_API_KEY,
-        'q':         q,
-        'part':      'snippet',
-        'maxResults': n,
-        'type':      'video',
-        'order':     'date'
+        'key':   YOUTUBE_API_KEY,
+        'q':     q,
+        'part':  'snippet',
+        'type':  'video',
+        'order': 'date',
+        'maxResults': min(n, 50)
     }
-    resp = requests.get(url, params=params, timeout=10)
-    resp.raise_for_status()
-    items = resp.json().get('items', [])
     videos = []
-    for it in items:
-        snip = it['snippet']
-        vid = it['id']['videoId']
-        videos.append({
-            'title':      snip['title'],
-            'videoId':    vid,
-            'publishedAt': snip['publishedAt']
-        })
+    next_token = None
+    while len(videos) < n:
+        if next_token:
+            params['pageToken'] = next_token
+            params['maxResults'] = min(n - len(videos), 50)
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        for it in data.get('items', []):
+            snip = it['snippet']
+            vid = it['id']['videoId']
+            videos.append({
+                'title':       snip['title'],
+                'videoId':     vid,
+                'publishedAt': snip['publishedAt']
+            })
+            if len(videos) >= n:
+                break
+        next_token = data.get('nextPageToken')
+        if not next_token:
+            break
     return videos
 
 

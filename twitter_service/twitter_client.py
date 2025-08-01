@@ -34,23 +34,25 @@ def search_tweets(query, max_results=50):
         return search_tweets(query, max_results)
     
 def fetch_tweets(q: str, n: int = 20):
-    """
-    Recherche les n tweets les plus récents contenant q.
-    Renvoie une liste de dicts avec id_str, text, created_at.
-    """
-    resp = client.search_recent_tweets(
-        query=q,
-        max_results=min(n,100),
-        tweet_fields=['id','created_at','text']
-    )
+    """Fetch up to `n` recent tweets matching query using pagination."""
     tweets = []
-    if resp.data:
-        for t in resp.data:
-            # created_at est déjà un datetime
-            dt = t.created_at.astimezone(timezone.utc).isoformat()
-            tweets.append({
-                'id_str':     str(t.id),
-                'text':       t.text,
-                'created_at': dt
-            })
+    next_token = None
+    while len(tweets) < n:
+        resp = client.search_recent_tweets(
+            query=q,
+            max_results=min(n - len(tweets), 100),
+            tweet_fields=['id', 'created_at', 'text'],
+            next_token=next_token
+        )
+        if resp.data:
+            for t in resp.data:
+                dt = t.created_at.astimezone(timezone.utc).isoformat()
+                tweets.append({
+                    'id_str':     str(t.id),
+                    'text':       t.text,
+                    'created_at': dt
+                })
+        next_token = getattr(resp.meta, 'next_token', None) if hasattr(resp, 'meta') else None
+        if not next_token:
+            break
     return tweets

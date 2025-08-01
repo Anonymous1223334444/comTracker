@@ -6,8 +6,7 @@ from dateutil import parser
 from twitter_client import fetch_tweets
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.search import match_query
-from langdetect import detect
-import tldextract
+from utils.lang import detect_language, extract_country
 
 app = Flask(__name__)
 CORS(app)
@@ -45,18 +44,12 @@ def articles():
         if ex and any(w in text.lower() for w in ex):
             continue
 
-        try:
-            lang = detect(text)
-        except:
-            lang = ''
+        lang = detect_language(text)
         if lang_filter and lang != lang_filter:
             continue
 
         url = f"https://twitter.com/i/web/status/{t.get('id_str')}"
-        ext   = tldextract.extract(url)
-        parts = ext.suffix.split('.')
-        last  = parts[-1]
-        cc    = last if len(last) == 2 else ''
+        cc  = extract_country(url)
         if country_filter and cc != country_filter:
             continue
 

@@ -9,28 +9,25 @@ reddit = praw.Reddit(
 )
 
 def fetch_reddit_posts(query: str, limit: int = 20):
-    """
-    Recherche les `limit` posts les plus récents contenant `query`
-    dans tous les subreddits, et renvoie une liste de dicts :
-    { id, title, url, created_utc }
-    """
+    """Fetch up to `limit` recent reddit posts using pagination."""
     posts = []
-    # Recherche globale (subreddit='all')
-    for submission in reddit.subreddit('all').search(query, sort='new', limit=limit):
+    for submission in reddit.subreddit('all').search(query, sort='new', limit=None):
         posts.append({
             'id':          submission.id,
             'title':       submission.title,
             'url':         submission.url,
             'created_utc': submission.created_utc
         })
+        if len(posts) >= limit:
+            break
     return posts
 
 def search_posts(query, max_results=50):
     results = []
-    for submission in reddit.subreddit("all").search(query, limit=max_results):
+    for submission in reddit.subreddit("all").search(query, limit=None):
         results.append({
             "service":     "reddit",
-            "source":      f"r/{submission.subreddit.display_name}",        # badge
+            "source":      f"r/{submission.subreddit.display_name}",
             "id":          submission.id,
             "title":       submission.title,
             "description": submission.selftext or "",
@@ -39,4 +36,6 @@ def search_posts(query, max_results=50):
                             submission.created_utc
                         ).isoformat(),
         })
+        if len(results) >= max_results:
+            break
     return results
