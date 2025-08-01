@@ -1,0 +1,10 @@
+https://rss.lemonde.fr/rss/une.xml
+https://www.france24.com/fr/rss
+https://www.france24.com/en/rss
+https://www.rfi.fr/fr/rss
+https://www.rfi.fr/en/rss
+https://www.seneweb.com/rss.xml
+https://senepeople.com/feed/
+https://senego.com/feed/
+https://www.senenews.com/feed
+https://lequotidien.sn/feed/
